@@ -263,13 +263,14 @@ async def audio2text(room, event):
                                                 e))
             await aiofiles.os.remove(filepath)
             return
+        await aiofiles.os.remove(filepath)
+        await bot.api.send_markdown_message(room.room_id, "### 识别结果: \n" + text, userid=event.sender)
         # Generate response
         replay_text = await conversation_tracking(text, event.sender)
 
         # Send the question text back to the user
         # Send the transcribed text back to the user
-        new_replay_text = f"### 识别结果:\n" + f'{text}\n' + "### ChatGPT: \n" + f'{replay_text}'
-        await bot.api.send_markdown_message(room.room_id, new_replay_text, userid=event.sender)
+        await bot.api.send_markdown_message(room.room_id, "### ChatGPT: \n" + f'{replay_text}', userid=event.sender)
 
 
 def run_bot():
