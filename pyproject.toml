@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "matrix-chatgpt-voice-bot"
+description = "A bot to manage user registration tokens on a matrix server."
+keywords = ["matrix", "registration", "bot", "user", "registration", "API"]
+license = { text = "AGPL-3.0-or-later" }
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: GNU Affero General Public License v3",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+dependencies = [
+    "matrix-nio[e2e]",
+    "simplematrixbotlib",
+    "aiohttp[speedups]",
+    "pyyaml",
+    "openai",
+    "pydub",
+    "SpeechRecognition",
+    "replicate",
+    "Pillow"
+]
+dynamic = ["version", "readme"]
+
+[project.scripts]
+matrix-chatgpt-voice-bot = "matrix_chatgpt_voice_bot.bot:run_bot"
+
+
+[tool.setuptools.packages]
+find = {}
+
+[tool.setuptools.dynamic]
+version = { attr = "matrix_chatgpt_voice_bot.__version__" }
+readme = { file = "README.rst" }
