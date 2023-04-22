@@ -64,11 +64,10 @@ Configure the bot with a file named `config/config.toml`. It should look like th
 [ simplematrixbotlib.config ]
   description = "This is a simple matrix bot library created by liuyang for audio recognition and text to AI models like (chatgpt | mdjurney)"
 
-  homeserver = "https://matrix.example.com"
-  username = ""
-  password = ""
-  login_token = ""
-  access_token = ""
+  HOMESERVER = "https://matrix.example.com"
+  USERNAME = ""
+  PASSWORD = ""
+  ACCESS_TOKEN = ""
   OPEN_AI_KEY = ""
   ENABLE_ENCRYPTION = "true"
   REPLICATE_API_TOKEN = "" # key from replicate
@@ -92,7 +91,6 @@ docker run -d --name matrix-chatgpt-voice-bot \
   -e HOMESERVER="https://synapse.example.com" \
   -e USERNAME="chatgpt-voice-bot" \
   -e PASSWORD="password" \
-  -e LOGIN_TOKEN="" \
   -e ACCESS_TOKEN="" \
   -e OPEN_AI_KEY="" \
   -e REPLICATE_API_TOKEN="" \
@@ -100,6 +98,7 @@ docker run -d --name matrix-chatgpt-voice-bot \
   ly1998117/matrix-chatgpt-voice-bot:latest
 ```
 
+If you use `ACCESS_TOKEN` you can leave `PASSWORD` empty.
 ## Install using docker-compose
 
 To use this container via docker you can create the following `docker-compose.yml` and start the container
@@ -117,7 +116,6 @@ services:
       HOMESERVER: "https://synapse.example.com"
       USERNAME: "chatgpt-voice-bot"
       PASSWORD: "password"
-      LOGIN_TOKEN: ""
       ACCESS_TOKEN: ""
       ENABLE_ENCRYPTION: "true"
       OPEN_AI_KEY: ""

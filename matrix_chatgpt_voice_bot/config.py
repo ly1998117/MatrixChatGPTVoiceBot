@@ -3,8 +3,8 @@ from os import environ
 
 
 class FileConfig(Config):
-    keys = ["homeserver", "username", "password", "login_token",
-            "access_token", "OPEN_AI_KEY", "REPLICATE_API_TOKEN", "ENABLE_ENCRYPTION"]
+    keys = ["HOMESERVER", "USERNAME", "PASSWORD", "LOGIN_TOKEN",
+            "ACCESS_TOKEN", "OPEN_AI_KEY", "REPLICATE_API_TOKEN", "ENABLE_ENCRYPTION"]
 
     def __init__(self, config_path):
         super().__init__()
@@ -25,8 +25,10 @@ class FileConfig(Config):
 
     def _load_env_dict(self):
         for key in self.keys:
-            if key in environ.keys():
-                setattr(self, key.upper(), environ[key])
+            if key.upper() in environ.keys():
+                setattr(self, key.upper(), environ[key.upper()])
+            if key.lower() in environ.keys():
+                setattr(self, key.upper(), environ[key.lower()])
 
     def _load_config_dict(self, config_dict: dict) -> None:
         for key, value in config_dict.items():
