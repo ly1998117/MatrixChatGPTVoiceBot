@@ -16,10 +16,10 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
 ]
 dependencies = [
-    "matrix-nio[e2e]",
-    "simplematrixbotlib",
+    "simplematrixbotlib>=2.8,<3.0.0",
     "aiohttp[speedups]",
     "pyyaml",
+    "matrix-nio[e2e]",
     "openai",
     "pydub",
     "SpeechRecognition",
@@ -29,7 +29,7 @@ dependencies = [
 dynamic = ["version", "readme"]
 
 [project.scripts]
-matrix-chatgpt-voice-bot = "matrix_chatgpt_voice_bot.bot:run_bot"
+matrix-chatgpt-voice-bot = "matrix_chatgpt_voice_bot.main:run_bot"
 
 
 [tool.setuptools.packages]

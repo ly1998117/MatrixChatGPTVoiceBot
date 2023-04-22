@@ -1,7 +1,7 @@
 [simplematrixbotlib.config]
 description = "This is a simple matrix bot library created by liuyang for audio recognition and text to AI models like (chatgpt | mdjurney)"
 
-homeserver = "https://matrix.liuy.site"
+homeserver = "https://matrix.liuy.tech"
 username = ""
 password = ""
 login_token = ""
