@@ -155,7 +155,11 @@ async def conversation_tracking(text_message, user_id):
         "role": "user", "content": text_message
     })
     # Generate response
-    response = await generate_response_chatgpt(conversation_history)
+    try:
+        response = await generate_response_chatgpt(conversation_history)
+    except openai.error.AuthenticationError:
+        response = "Open AI API key is invalid. Please check the API key."
+        return response
 
     # Add the response to the user's responses
     user_responses.append(response)
@@ -166,11 +170,11 @@ async def conversation_tracking(text_message, user_id):
 
 
 ############################################## bot ##############################################
-@bot.listener.on_reaction_event
-async def reaction(room, event):
-    match = MessageMatch(room, event, bot, PREFIX)
-    if match.is_not_from_this_bot() and match.prefix():
-        pass
+# @bot.listener.on_reaction_event
+# async def reaction(room, event):
+#     match = MessageMatch(room, event, bot, PREFIX)
+#     if match.is_not_from_this_bot() and match.prefix():
+#         pass
 
 
 @bot.listener.on_message_event
