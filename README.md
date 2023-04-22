@@ -21,7 +21,7 @@ It uses the GPT-3.5 Turbo model for generating text and engineering the prompts.
 # Requirements
 
 + Python <= 3.10
-+ simplematrixbotlib
++ simplematrixbotlib >= 2.8
 + pyyaml
 + openai
 + pydub
@@ -70,6 +70,7 @@ Configure the bot with a file named `config/config.toml`. It should look like th
   login_token = ""
   access_token = ""
   OPEN_AI_KEY = ""
+  ENABLE_ENCRYPTION = "true"
   REPLICATE_API_TOKEN = "" # key from replicate
 ```
 
@@ -95,6 +96,7 @@ docker run -d --name matrix-chatgpt-voice-bot \
   -e ACCESS_TOKEN="" \
   -e OPEN_AI_KEY="" \
   -e REPLICATE_API_TOKEN="" \
+  -e ENABLE_ENCRYPTION="true" \
   ly1998117/matrix-chatgpt-voice-bot:latest
 ```
 
