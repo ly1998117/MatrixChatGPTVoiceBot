@@ -17,9 +17,9 @@ classifiers = [
 ]
 dependencies = [
     "simplematrixbotlib>=2.8,<3.0.0",
-#    "aiohttp[speedups]",
+    "aiohttp[speedups]",
     "pyyaml",
-#    "matrix-nio[e2e]",
+    "matrix-nio[e2e]",
     "openai",
     "pydub",
     "SpeechRecognition",
