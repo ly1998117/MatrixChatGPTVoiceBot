@@ -3,7 +3,7 @@ import markdown
 from simplematrixbotlib import Bot, Creds, Api
 import simplematrixbotlib.match as match
 from pydub import AudioSegment
-from nio import RoomMessageText, UnknownEvent, RoomMessageAudio, RoomMessageImage
+from nio import RoomMessageText, UnknownEvent, RoomMessageAudio, RoomMessageImage, BadEvent
 
 
 class MessageMatch(match.MessageMatch):
@@ -14,6 +14,40 @@ class MessageMatch(match.MessageMatch):
             return True
         return False
 
+    def command(self, command=None, case_sensitive=True):
+        """
+                Parameters
+                ----------
+                command : str, Optional
+                    Beginning of messages that are intended to be commands, but after the prefix; e.g. "help".
+
+                case_sensitive : bool, Optional
+                    Whether the string should be matched case sensitive.
+
+                Returns
+                -------
+                boolean
+                    Returns True if the string after the prefix and before the first space is the same as the given arg.
+
+                str
+                    Returns the string after the prefix and before the first space if no arg is passed to this method.
+                """
+
+        if self._prefix == self.event.body[0:len(self._prefix)]:
+            body_without_prefix = self.event.body[len(self._prefix):]
+        else:
+            body_without_prefix = self.event.body
+
+        if not body_without_prefix or len(body_without_prefix.split()) == 0:
+            return []
+
+        if command:
+            return (body_without_prefix.split()[0] == command
+                    if case_sensitive else
+                    body_without_prefix.split()[0].lower() == command.lower())
+        else:
+            return body_without_prefix.split()[0]
+
 
 class MediaApi(Api):
     def __init__(self, creds, config):
@@ -23,7 +57,9 @@ class MediaApi(Api):
     async def receive_audio_message(self, server_name, media_id):
         response = await self.async_client.download(server_name, media_id)
         # first do an upload of image, then send URI of upload to room
-        async with aiofiles.open(response.filename, "wb") as f:
+        if response.filename is None:
+            response.filename = f'audio.ogg'
+        async with aiofiles.open(response.filename, "w+b") as f:
             await f.write(response.body)
         sound = AudioSegment.from_file(response.filename)
 
@@ -110,6 +146,12 @@ class Listener:
 
         return wrapper
 
+    def on_bad_event(self, func):
+        if [func, BadEvent] in self._registry:
+            func()
+        else:
+            self._registry.append([func, BadEvent])
+
     def on_message_event(self, func):
         if [func, RoomMessageText] in self._registry:
             func()
@@ -134,6 +176,14 @@ class Listener:
             if event.type == "m.reaction":
                 await func(room, event,
                            event.source['content']['m.relates_to']['key'])
+
+        self._registry.append([new_func, UnknownEvent])
+
+    def on_unknown_event(self, func):
+
+        async def new_func(room, event):
+            await func(room, event,
+                       event.source['content']['m.relates_to']['key'])
 
         self._registry.append([new_func, UnknownEvent])
 

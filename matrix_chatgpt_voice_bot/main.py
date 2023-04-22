@@ -1,5 +1,4 @@
 # This is a sample Python script.
-import cryptography
 import argparse
 import openai
 import speech_recognition as sr
@@ -239,15 +238,16 @@ async def chat(room, event):
             await bot.api.send_text_message(room.room_id, "Cleared old conversations")
 
 
-# define a function to handle the audio event
-@bot.listener.on_audio_event
 async def audio2text(room, event):
     match = MessageMatch(room, event, bot, PREFIX)
-    if match.is_not_from_this_bot() and match.command("Voice"):
+    if match.is_not_from_this_bot():
         url = event.source['content']['url']
         server_name, media_id = os.path.split(url)
-        filepath = await bot.api.receive_audio_message(server_name.split('/')[-1], media_id)
-
+        try:
+            filepath = await bot.api.receive_audio_message(server_name.split('/')[-1], media_id)
+        except Exception:
+            await bot.api.send_text_message(room.room_id, "Audio format conversion failed")
+            return
         r = sr.Recognizer()
         with sr.AudioFile(filepath) as source:
             audio = r.record(source)
@@ -263,6 +263,10 @@ async def audio2text(room, event):
                                                 e))
             await aiofiles.os.remove(filepath)
             return
+        except Exception:
+            await bot.api.send_text_message(room.room_id, "Could not recognize audio for unknown reason")
+            await aiofiles.os.remove(filepath)
+            return
         await aiofiles.os.remove(filepath)
         await bot.api.send_markdown_message(room.room_id, "### 识别结果: \n" + text, userid=event.sender)
         # Generate response
@@ -271,6 +275,23 @@ async def audio2text(room, event):
         # Send the question text back to the user
         # Send the transcribed text back to the user
         await bot.api.send_markdown_message(room.room_id, "### ChatGPT: \n" + f'{replay_text}')
+
+
+# define a function to handle the audio event
+@bot.listener.on_audio_event
+async def audio_event(room, event):
+    await audio2text(room, event)
+
+
+@bot.listener.on_bad_event
+async def bad_event(room, event):
+    for k, v in event.source['content'].items():
+        setattr(event, k, v)
+    if getattr(event, 'msgtype') == 'm.audio':
+        event.body = 'Voice ' + event.body
+        event.source['content']['url'] = event.source['content']['file']['url']
+        await bot.api.send_text_message(room.room_id, "Audio Bad event received")
+        await audio2text(room, event)
 
 
 def run_bot():
