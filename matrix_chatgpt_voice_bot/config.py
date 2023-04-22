@@ -17,6 +17,10 @@ class FileConfig(Config):
         if hasattr(self, "ENABLE_ENCRYPTION") and self.ENABLE_ENCRYPTION:
             self._enable_encryption()
 
+    def _set_attr(self, key, value):
+        print(f"Setting {key} to {value}")
+        setattr(self, key, value)
+
     def _enable_encryption(self):
         self.encryption_enabled = True
         self.emoji_verify = True
@@ -26,9 +30,9 @@ class FileConfig(Config):
     def _load_env_dict(self):
         for key in self.keys:
             if key.upper() in environ.keys():
-                setattr(self, key.upper(), environ[key.upper()])
+                self._set_attr(key.upper(), environ[key.upper()])
             if key.lower() in environ.keys():
-                setattr(self, key.upper(), environ[key.lower()])
+                self._set_attr(key.upper(), environ[key.lower()])
 
     def _load_config_dict(self, config_dict: dict) -> None:
         for key, value in config_dict.items():
@@ -40,4 +44,4 @@ class FileConfig(Config):
             elif value == 'False' or value == 'false':
                 value = False
 
-            setattr(self, key, value)
+            self._set_attr(key, value)

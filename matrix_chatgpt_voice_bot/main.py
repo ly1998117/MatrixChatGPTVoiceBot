@@ -30,7 +30,7 @@ bot = VoiceBot(config)
 PREFIX = '!'
 # Store the last 10 conversations for each user
 conversations = {}
-openai.api_key = bot.config.OPEN_AI_KEY
+openai.api_key = config.OPEN_AI_KEY
 # app = Celery('main', broker=bot.config.CELERY_BROKER_URL, backend=bot.config.CELERY_RESULT_BACKEND)
 clinet = replicate.Client(api_token=bot.config.REPLICATE_API_TOKEN)
 model = clinet.models.get("prompthero/openjourney")
