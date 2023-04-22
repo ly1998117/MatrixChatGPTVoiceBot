@@ -270,7 +270,7 @@ async def audio2text(room, event):
 
         # Send the question text back to the user
         # Send the transcribed text back to the user
-        await bot.api.send_markdown_message(room.room_id, "### ChatGPT: \n" + f'{replay_text}', userid=event.sender)
+        await bot.api.send_markdown_message(room.room_id, "### ChatGPT: \n" + f'{replay_text}')
 
 
 def run_bot():
