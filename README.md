@@ -19,14 +19,14 @@ It uses the GPT-3.5 Turbo model for generating text and engineering the prompts.
 * `clear`: Clears the chat history.
 
 # Requirements
-
++ apt-get install ffmpeg build-essential gcc libolm-dev
 + Python <= 3.10
 + simplematrixbotlib >= 2.8
 + pyyaml
 + openai
 + pydub
 + SpeechRecognition
-+ replicate
++ replicate 
 + Pillow
 
 # Getting started
@@ -110,7 +110,7 @@ with `docker-compose up -d`. Explanation on how to obtain the correct values of 
 version: "3.7"
 
 services:
-  matrix-registration-bot:
+  matrix-chatgpt-voice-bot:
     image: ly1998117/matrix-chatgpt-voice-bot:latest
     environment:
       LOGGING_LEVEL: DEBUG
@@ -127,7 +127,7 @@ services:
 
 ### Automatically (re-)start the bot with Systemd
 
-To have the bot start automatically after reboots create the file `/etc/systemd/system/matrix-registration-bot.service`
+To have the bot start automatically after reboots create the file `/etc/systemd/system/matrix-chatgpt-voice-bot.service`
 with the following content on your server. This assumes you use that you place your configuration in
 `/matrix/config/config.yml` and the bot in `/matrix`. If you use a different location, adjust the paths accordingly.
 
@@ -166,5 +166,4 @@ This will be enabled by default.
 # Related Projects
 
 * The project is made possible by [Simple-Matrix-Bot-Lib](https://simple-matrix-bot-lib.readthedocs.io).
-* An alternative for managing tokens is [Synapse Admin](https://github.com/Awesome-Technologies/synapse-admin)
 

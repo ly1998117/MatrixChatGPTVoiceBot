@@ -25,11 +25,9 @@ class MediaApi(Api):
         # first do an upload of image, then send URI of upload to room
         async with aiofiles.open(response.filename, "wb") as f:
             await f.write(response.body)
-        # process = subprocess.run(['ffmpeg', '-i', f'{response.filename}', f'{response.filename}.wav'])
-        # if process.returncode != 0:
-        #     raise Exception("Something went wrong")
-        sound = AudioSegment.from_file(response.filename, format="ogg")
-        filepath = response.filename.replace('.ogg', '.wav')
+        sound = AudioSegment.from_file(response.filename)
+
+        filepath = response.filename.split('.')[0] + '.wav'
         sound.export(filepath, format="wav")
         await aiofiles.os.remove(response.filename)
         return filepath
