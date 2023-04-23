@@ -263,7 +263,6 @@ async def chat(room, event):
             if len(message) == 0:
                 await bot.api.send_text_message(room.room_id, "Please enter your openai api key", userid=event.sender)
                 return
-            old_key = openai.api_key
             try:
                 openai.api_key = message
             except Exception:
@@ -272,7 +271,6 @@ async def chat(room, event):
                 return
             await bot.api.send_markdown_message(room.room_id,
                                                 "### Openai api key reset successfully\n"
-                                                f"+ old key is {old_key}\n"
                                                 f"+ new key is {message}",
                                                 userid=event.sender)
 
@@ -282,7 +280,6 @@ async def chat(room, event):
             if len(message) == 0:
                 await bot.api.send_text_message(room.room_id, "Please enter your replicate token", userid=event.sender)
                 return
-            old_token = clinet.api_token
             try:
                 clinet = replicate.Client(api_token=message)
                 version = clinet.models.get("prompthero/openjourney").versions.get(
@@ -301,7 +298,6 @@ async def chat(room, event):
 
             await bot.api.send_markdown_message(room.room_id,
                                                 "### Replicate token reset successfully\n"
-                                                f"+ old token is {old_token}\n"
                                                 f"+ new token is {message}",
                                                 userid=event.sender)
 
