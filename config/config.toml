@@ -8,5 +8,5 @@ login_token = ""
 access_token = ""
 #OPEN_AI_KEY = ""# key from open AI
 ENABLE_ENCRYPTION = "True"
-OPEN_AI_KEY = ""# key from open AI
-REPLICATE_API_TOKEN = '2c58cf760a1d7b056096f84bbb7bb14938ff71b5'
+OPEN_AI_KEY = ''# key from open AI
+REPLICATE_API_TOKEN = ""

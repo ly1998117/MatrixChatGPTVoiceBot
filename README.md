@@ -1,7 +1,7 @@
 # Matrix ChatGPT Voice Bot
 
 Matrix ChatGPT Voice Bot is a Python GitHub repository that allows users to communicate with an AI
-chatbot using voice-to-text technologies powered by OpenAI and to generate images by MdJourney.
+chatbot using voice-to-text technologies powered by OpenAI and to generate images by Midjourney.
 It uses the GPT-3.5 Turbo model for generating text and engineering the prompts.
 
 ![img](images/1.png)
@@ -17,6 +17,8 @@ It uses the GPT-3.5 Turbo model for generating text and engineering the prompts.
 * `c`: Chat with the chatGPT.
 * `g`: Generate images. Just type `g [description]` and the bot will generate the prompts and images.
 * `clear`: Clears the chat history.
+* `openai`: reset openai api key
+* `replicate`: reset replicate token
 
 # Requirements
 + apt-get install ffmpeg build-essential gcc libolm-dev

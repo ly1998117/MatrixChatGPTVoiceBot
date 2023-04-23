@@ -32,8 +32,8 @@ conversations = {}
 openai.api_key = config.OPEN_AI_KEY
 # app = Celery('main', broker=bot.config.CELERY_BROKER_URL, backend=bot.config.CELERY_RESULT_BACKEND)
 clinet = replicate.Client(api_token=bot.config.REPLICATE_API_TOKEN)
-model = clinet.models.get("prompthero/openjourney")
-version = model.versions.get("9936c2001faa2194a261c01381f90e65261879985476014a0a37a334593a05eb")
+version = clinet.models.get("prompthero/openjourney").versions.get(
+    "9936c2001faa2194a261c01381f90e65261879985476014a0a37a334593a05eb")
 
 
 async def image_watermark(img_response):
@@ -182,14 +182,17 @@ async def start(room, event):
     userid = event.sender
 
     if match.is_not_from_this_bot() and match.prefix() or match.at_this_bot() and match.is_not_from_this_bot():
-        if not match.command("c") and not match.command("g") and not match.command("clear"):
+        if not match.command("c") and not match.command("g") and not match.command("clear") and not match.command(
+                "openai") and not match.command("replicate"):
             await bot.api.send_markdown_message(room.room_id,
                                                 f"**{bot.disc}**\n\n"
                                                 "## Command with prefix(@|!)\n"
                                                 "+ c - chat with chatGPT\n"
                                                 "+ g - generate images with chatGPT prompt\n"
                                                 "+ clear - Clears old conversations\n"
-                                                "+ send voice to do voice conversation",
+                                                "+ send voice to do voice conversation\n"
+                                                "+ openai - reset openai api key\n"
+                                                "+ replicate - reset replicate token\n",
                                                 userid=userid)
 
 
@@ -198,8 +201,9 @@ async def chat(room, event):
     match = MessageMatch(room, event, bot, PREFIX)
 
     if match.is_not_from_this_bot() and match.prefix() or match.at_this_bot() and match.is_not_from_this_bot():
-        text = event.body
+        message = event.body
         if match.command('c'):
+            text = message.replace(match._prefix, "").replace("c", "").strip()
             # Generate response
             replay_text = await conversation_tracking(text, event.sender)
 
@@ -208,21 +212,37 @@ async def chat(room, event):
             await bot.api.send_text_message(room.room_id, replay_text, userid=event.sender)
 
         if match.command('g'):
-            message = event.body
-            prompt = message.replace(match._prefix, "").replace("image", "").strip()
+            prompt = message.replace(match._prefix, "").replace("g", "").strip()
             prompt = await conversation_tracking(
                 f'我正在使用一个名为 Midjourney 的 Al 绘图工具.我指定你成为 Midjourney 的提示词生成器.'
-                f'接着我会在想要生成的主题前添加斜线 (/). 你将在不同情况下用英文生成合适的提示.例如,如果我输入'
-                f'/运动鞋商品图片, 您将生成 [Realistic true details photography of sports shoes, y2k, '
+                f'接着我会在想要生成的主题前添加斜线 (/). 你将在不同情况下用英文生成合适的提示，且必须用 [ ] 括起来. '
+                f'例如,如果我输入 /运动鞋商品图片, 你将生成 [Realistic true details photography of sports shoes, y2k, '
                 f'lively, bright colors, product photography, Sony A7 R IV, clean sharp focus] \n'
                 f'/{prompt}', event.sender)
-            await bot.api.send_markdown_message(room.room_id, f"### ChatGPT 生成提示词\n"
-                                                              f"+ {prompt} \n"
-                                                              "### 图像生成中...", userid=event.sender)
-            prompt = prompt.split('[')[-1].split(']')[0]
-            if 'sorry' in prompt:
+            await bot.api.send_markdown_message(room.room_id,
+                                                f"### ChatGPT 生成提示词\n"
+                                                f"+ {prompt} \n",
+                                                userid=event.sender)
+            try:
+                prompt = prompt.split('[')[-1].split(']')[0]
+                if len(prompt) == 0:
+                    raise IndexError
+            except IndexError:
+                await bot.api.send_text_message(room.room_id, "Prompts generating failed, try again later.",
+                                                userid=event.sender)
                 return
-            image_url = await generate_image_replicate(prompt)
+            try:
+                image_url = await generate_image_replicate(prompt)
+            except replicate.exceptions.ReplicateError:
+                await bot.api.send_text_message(room.room_id,
+                                                "reached the free time limit. To continue using Replicate, "
+                                                "set up billing at https://replicate.com/account/billing#billing",
+                                                userid=event.sender)
+                return
+            except Exception:
+                await bot.api.send_text_message(room.room_id, "Could not generate image, try again later.",
+                                                userid=event.sender)
+                return
             # image_url = task.get()
 
             if image_url is not None:
@@ -236,6 +256,54 @@ async def chat(room, event):
         if match.command('clear'):
             conversations.clear()
             await bot.api.send_text_message(room.room_id, "Cleared old conversations")
+
+        if match.command('openai'):
+            global openai
+            message = message.replace(match._prefix, "").replace("openai", "").replace(" ", "")
+            if len(message) == 0:
+                await bot.api.send_text_message(room.room_id, "Please enter your openai api key", userid=event.sender)
+                return
+            old_key = openai.api_key
+            try:
+                openai.api_key = message
+            except Exception:
+                await bot.api.send_text_message(room.room_id, "Openai api key reset failed, try again later.",
+                                                userid=event.sender)
+                return
+            await bot.api.send_markdown_message(room.room_id,
+                                                "### Openai api key reset successfully\n"
+                                                f"+ old key is {old_key}\n"
+                                                f"+ new key is {message}",
+                                                userid=event.sender)
+
+        if match.command('replicate'):
+            global clinet, version
+            message = message.replace(match._prefix, "").replace("replicate", "").replace(" ", "")
+            if len(message) == 0:
+                await bot.api.send_text_message(room.room_id, "Please enter your replicate token", userid=event.sender)
+                return
+            old_token = clinet.api_token
+            try:
+                clinet = replicate.Client(api_token=message)
+                version = clinet.models.get("prompthero/openjourney").versions.get(
+                    "9936c2001faa2194a261c01381f90e65261879985476014a0a37a334593a05eb")
+            except replicate.exceptions.ReplicateError:
+                await bot.api.send_text_message(room.room_id,
+                                                "Incorrect authentication token. Learn how to authenticate and"
+                                                " get your API token here: "
+                                                "https://replicate.com/docs/reference/http#authentication",
+                                                userid=event.sender)
+                return
+            except Exception:
+                await bot.api.send_text_message(room.room_id, "Could not reset replicate token, try again later.",
+                                                userid=event.sender)
+                return
+
+            await bot.api.send_markdown_message(room.room_id,
+                                                "### Replicate token reset successfully\n"
+                                                f"+ old token is {old_token}\n"
+                                                f"+ new token is {message}",
+                                                userid=event.sender)
 
 
 async def audio2text(room, event):
