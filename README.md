@@ -59,7 +59,7 @@ The installation can easily be done via pip. It is recommended to use a virtual 
 $ pip install .
 ```
 
-## Configuration
+### Configuration
 
 Configure the bot with a file named `config/config.toml`. It should look like this
 
