@@ -21,6 +21,7 @@ It uses the GPT-3.5 Turbo model for generating text and engineering the prompts.
 * `replicate`: reset replicate token
 
 # Requirements
+
 + apt-get install ffmpeg build-essential gcc libolm-dev
 + Python <= 3.10
 + simplematrixbotlib >= 2.8
@@ -28,7 +29,7 @@ It uses the GPT-3.5 Turbo model for generating text and engineering the prompts.
 + openai
 + pydub
 + SpeechRecognition
-+ replicate 
++ replicate
 + Pillow
 
 # Getting started
@@ -50,7 +51,7 @@ curl -X POST --header 'Content-Type: application/json' -d '{
 
 Once you are finished you can start the installation of the bot.
 
-## Manual Installation
+## Installation (manual)
 
 The installation can easily be done via pip. It is recommended to use a virtual environment.
 
@@ -88,6 +89,7 @@ python -m matrix_chatgpt_voice_bot.main
 and then open a Direct Message to the bot. The type one of the following commands.
 
 ## Install using docker (recommended)
+
 ```
 docker run -d --name matrix-chatgpt-voice-bot \
   -e HOMESERVER="https://synapse.example.com" \
@@ -100,7 +102,9 @@ docker run -d --name matrix-chatgpt-voice-bot \
   ly1998117/matrix-chatgpt-voice-bot:latest
 ```
 
-If you use `ACCESS_TOKEN` you can leave `PASSWORD` empty.
+If you use `ACCESS_TOKEN` you can leave `PASSWORD` empty. The `OPEN_AI_KEY` and `REPLICATE_API_TOKEN` is optional, you
+can leave it empty and reset them with the `openai` and `replicate` commands to the bot.
+
 ## Install using docker-compose
 
 To use this container via docker you can create the following `docker-compose.yml` and start the container
@@ -123,7 +127,6 @@ services:
       OPEN_AI_KEY: ""
       REPLICATE_API_TOKEN: "" # key from replicate
 ```
-
 
 ### Automatically (re-)start the bot with Systemd
 

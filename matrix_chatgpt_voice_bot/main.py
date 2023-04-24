@@ -27,13 +27,32 @@ else:
 config = FileConfig(config_path)
 bot = VoiceBot(config)
 PREFIX = '!'
+openai_init = False
+replicate_init = False
 # Store the last 10 conversations for each user
 conversations = {}
-openai.api_key = config.OPEN_AI_KEY
-# app = Celery('main', broker=bot.config.CELERY_BROKER_URL, backend=bot.config.CELERY_RESULT_BACKEND)
-clinet = replicate.Client(api_token=bot.config.REPLICATE_API_TOKEN)
-version = clinet.models.get("prompthero/openjourney").versions.get(
-    "9936c2001faa2194a261c01381f90e65261879985476014a0a37a334593a05eb")
+global version
+
+
+async def init_openai():
+    global openai_init
+    if openai_init:
+        return
+    openai.api_key = config.OPEN_AI_KEY
+    openai_init = True
+
+
+async def init_replicate():
+    global version, replicate_init
+    if not replicate_init:
+        try:
+            clinet = replicate.Client(api_token=config.REPLICATE_API_TOKEN)
+            version = clinet.models.get("prompthero/openjourney").versions.get(
+                "9936c2001faa2194a261c01381f90e65261879985476014a0a37a334593a05eb")
+        except Exception:
+            return False
+        replicate_init = True
+    return True
 
 
 async def image_watermark(img_response):
@@ -203,6 +222,7 @@ async def chat(room, event):
     if match.is_not_from_this_bot() and match.prefix() or match.at_this_bot() and match.is_not_from_this_bot():
         message = event.body
         if match.command('c'):
+            await init_openai()
             text = message.replace(match._prefix, "").replace("c", "").strip()
             # Generate response
             replay_text = await conversation_tracking(text, event.sender)
@@ -212,6 +232,10 @@ async def chat(room, event):
             await bot.api.send_text_message(room.room_id, replay_text, userid=event.sender)
 
         if match.command('g'):
+            if not await init_replicate():
+                await bot.api.send_text_message(room.room_id, "Replicate token is invalid. Please check the token.",
+                                                userid=event.sender)
+                return
             prompt = message.replace(match._prefix, "").replace("g", "").strip()
             prompt = await conversation_tracking(
                 f'我正在使用一个名为 Midjourney 的 Al 绘图工具.我指定你成为 Midjourney 的提示词生成器.'
@@ -258,7 +282,7 @@ async def chat(room, event):
             await bot.api.send_text_message(room.room_id, "Cleared old conversations")
 
         if match.command('openai'):
-            global openai
+            # global openai
             message = message.replace(match._prefix, "").replace("openai", "").replace(" ", "")
             if len(message) == 0:
                 await bot.api.send_text_message(room.room_id, "Please enter your openai api key", userid=event.sender)
