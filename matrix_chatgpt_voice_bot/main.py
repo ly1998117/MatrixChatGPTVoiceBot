@@ -34,24 +34,31 @@ conversations = {}
 global version
 
 
-async def init_openai():
+async def init_openai(key=None):
     global openai_init
-    if openai_init:
-        return
-    openai.api_key = config.OPEN_AI_KEY
+    if openai_init and key is None:
+        return True
+    if key is None:
+        openai.api_key = config.OPEN_AI_KEY
+    else:
+        openai.api_key = key
     openai_init = True
 
 
-async def init_replicate():
+async def init_replicate(token=None):
     global version, replicate_init
-    if not replicate_init:
-        try:
+    if replicate_init and token is None:
+        return True
+    try:
+        if token is None:
             clinet = replicate.Client(api_token=config.REPLICATE_API_TOKEN)
-            version = clinet.models.get("prompthero/openjourney").versions.get(
-                "9936c2001faa2194a261c01381f90e65261879985476014a0a37a334593a05eb")
-        except Exception:
-            return False
-        replicate_init = True
+        else:
+            clinet = replicate.Client(api_token=token)
+        version = clinet.models.get("prompthero/openjourney").versions.get(
+            "9936c2001faa2194a261c01381f90e65261879985476014a0a37a334593a05eb")
+    except Exception:
+        return False
+    replicate_init = True
     return True
 
 
@@ -288,7 +295,7 @@ async def chat(room, event):
                 await bot.api.send_text_message(room.room_id, "Please enter your openai api key", userid=event.sender)
                 return
             try:
-                openai.api_key = message
+                await init_openai(message)
             except Exception:
                 await bot.api.send_text_message(room.room_id, "Openai api key reset failed, try again later.",
                                                 userid=event.sender)
@@ -299,15 +306,12 @@ async def chat(room, event):
                                                 userid=event.sender)
 
         if match.command('replicate'):
-            global clinet, version
             message = message.replace(match._prefix, "").replace("replicate", "").replace(" ", "")
             if len(message) == 0:
                 await bot.api.send_text_message(room.room_id, "Please enter your replicate token", userid=event.sender)
                 return
             try:
-                clinet = replicate.Client(api_token=message)
-                version = clinet.models.get("prompthero/openjourney").versions.get(
-                    "9936c2001faa2194a261c01381f90e65261879985476014a0a37a334593a05eb")
+                await init_replicate(message)
             except replicate.exceptions.ReplicateError:
                 await bot.api.send_text_message(room.room_id,
                                                 "Incorrect authentication token. Learn how to authenticate and"
