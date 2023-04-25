@@ -239,6 +239,7 @@ async def chat(room, event):
             await bot.api.send_text_message(room.room_id, replay_text, userid=event.sender)
 
         if match.command('g'):
+            await init_openai()
             if not await init_replicate():
                 await bot.api.send_text_message(room.room_id, "Replicate token is invalid. Please check the token.",
                                                 userid=event.sender)
